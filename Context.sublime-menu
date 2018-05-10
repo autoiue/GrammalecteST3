@@ -1,0 +1,30 @@
+[
+	{
+		"id": "gramma_suggest",
+		"command" : "gramma_suggest"
+	},
+	{
+		"caption" : "Fix all of that kind",
+		"id": "gramma_fix_all_current",
+		"command" : "gramma_fix_all_current"
+	},
+	{
+		"caption" : "Fix all apostrophes",
+		"id": "gramma_apos",
+		"command" : "gramma_apos"
+	},
+	{
+		"caption" : "Fix all spaces",
+		"id": "gramma_spaces",
+		"command" : "gramma_spaces"
+	},
+	{
+		"caption" : "Clear Grammalecte",
+		"id": "gramma_clear",
+		"command" : "gramma_clear"
+	},
+	{
+		"id": "gramma_run",
+		"command" : "gramma_run"
+	},
+]
