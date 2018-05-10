@@ -143,7 +143,7 @@ def runGrammalecte(view):
 
 		
 		# draw error/regions on view
-		view.add_regions("gramma", state['regions'], "entity", "dot", sublime.DRAW_NO_FILL | sublime.DRAW_SQUIGGLY_UNDERLINE | sublime.PERSISTENT)
+		view.add_regions("gramma", state['regions'], "entity", "dot", sublime.DRAW_NO_FILL | sublime.DRAW_SQUIGGLY_UNDERLINE)
 
 		# flag to show that we up and running
 		state['showing_gramma'] = True
@@ -200,7 +200,7 @@ def replaceBySuggestion(view, edit, err):
 				e['region'] -= 1
 
 		# redraw view
-		view.add_regions("gramma", new_regions, "entity", "dot", sublime.DRAW_NO_FILL | sublime.DRAW_SQUIGGLY_UNDERLINE | sublime.PERSISTENT)
+		view.add_regions("gramma", new_regions, "entity", "dot", sublime.DRAW_NO_FILL | sublime.DRAW_SQUIGGLY_UNDERLINE)
 	pass
 
 # command to shut down the plugin
@@ -212,7 +212,7 @@ class GrammaClearCommand(sublime_plugin.TextCommand):
 		self.view.erase_regions("gramma")
 
 		# flag that we not running anymore for this view
-		get_state(view)['showing_gramma'] = False
+		get_state(self.view)['showing_gramma'] = False
 
 	# display command in context menu only id we're running
 	def is_visible(self):
