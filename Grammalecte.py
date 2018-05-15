@@ -11,7 +11,7 @@ view_states = {}
 
 # TODO: manage this through a sublime-config file
 ignore_ruleid = ['esp_fin_ligne']
-autorun_interval_seconds = 2
+autorun_interval_seconds = 3
 
 # Get a state for a particular view
 def get_state(view):
@@ -59,9 +59,6 @@ class GrammaRunCommand(sublime_plugin.TextCommand):
 
 	def run(self, edit):
 		runGrammalecte(self.view)
-
-	def is_enabled(self):
-		return True
 
 	def description(self):
 		if get_state(self.view)['showing_gramma']:
