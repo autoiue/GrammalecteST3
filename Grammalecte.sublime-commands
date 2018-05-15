@@ -1,0 +1,22 @@
+[
+	{
+		"caption" : "Grammalecte : Fix all apostrophes",
+		"id": "gramma_apos",
+		"command" : "gramma_apos"
+	},
+	{
+		"caption" : "Grammalecte : Fix all spaces",
+		"id": "gramma_spaces",
+		"command" : "gramma_spaces"
+	},
+	{
+		"caption" : "Clear Grammalecte",
+		"id": "gramma_clear",
+		"command" : "gramma_clear"
+	},
+	{
+		"caption" : "Run Grammalecte",
+		"id": "gramma_run",
+		"command" : "gramma_run"
+	},
+]
