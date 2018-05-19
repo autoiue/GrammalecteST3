@@ -5,13 +5,13 @@ A plugin to use Grammalecte in Sublime Text
 
 ## Attention !
 
-Ce plugin est expérimental et pourrait causer des __pertes de données__.
+Ce plug-in est expérimental et pourrait causer des __pertes de données__.
 
 ## Installation 
 
 Cloner ce dépot git dans le répertoire de packages de Sublime Text : __Préférences__ > __Browse packages…__ puis `git clone https://github.com/procsynth/GrammalecteST3` dans ce dossier.
 
-Ce plugin n’est pas actuellement disponible via Package Control (à venir).
+Ce plug-in n’est pas actuellement disponible via Package Control (à venir).
 
 ## Utilisation
 
@@ -38,19 +38,19 @@ Le plugin ne supporte pas :
 - La configuration via les fichiers de configuration de Sublime Text
 - Sublime Text 2
 
-Ce plugin est expérimental et pourrait causer des __pertes de données__.
+Ce plu-gin est expérimental et pourrait causer des __pertes de données__.
 
 ## Contribution
 
-Cloner ce dépot et pousser vos modifications !
+Cloner ce dépôt et pousser vos modifications !
 
 ## Licence
 
-Ce plugin communautaire n’est pas affilié à Grammalecte.
+Ce plug-in communautaire n’est pas affilié à Grammalecte.
 
-Ce plugin est sous license MIT reproduite ci-dessous.
+Ce plug-in est sous licence MIT reproduite ci-dessous.
 
-Ce plugin est expérimental et pourrait causer des __pertes de données__.
+Ce plug-in est expérimental et pourrait causer des __pertes de données__.
 
 MIT License
 
