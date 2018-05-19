@@ -12,7 +12,7 @@ class GrammarChecker:
     def __init__ (self, sLangCode, sContext="Python"):
         self.sLangCode = sLangCode
         # Grammar checker engine
-        self.gce = importlib.import_module("."+sLangCode, "grammalecte")
+        self.gce = importlib.import_module(sLangCode)
         self.gce.load(sContext)
         # Spell checker
         self.oSpellChecker = self.gce.getSpellChecker()
@@ -29,13 +29,13 @@ class GrammarChecker:
 
     def getTextFormatter (self):
         if self.oTextFormatter == None:
-            self.tf = importlib.import_module("."+self.sLangCode+".textformatter", "grammalecte")
+            self.tf = importlib.import_module(self.sLangCode+".textformatter")
         self.oTextFormatter = self.tf.TextFormatter()
         return self.oTextFormatter
 
     def getLexicographer (self):
         if self.oLexicographer == None:
-            self.lxg = importlib.import_module("."+self.sLangCode+".lexicographe", "grammalecte")
+            self.lxg = importlib.import_module(self.sLangCode+".lexicographe")
         self.oLexicographer = self.lxg.Lexicographe(self.oSpellChecker)
         return self.oLexicographer
 

@@ -1,22 +1,12 @@
 import sublime
 import sublime_plugin
-import subprocess
-import tempfile
+import GrammalecteST3.grammalecte_api as api
+import GrammalecteST3.grammalecte as grammalecte
 import json
-import os
-import stat
-from os.path import basename
-from os.path import join
 import time
 
 # stores the plugin states for the different views
 view_states = {}
-
-def plugin_loaded():
-	global grammalecte_path
-	grammalecte_path = join(sublime.packages_path(), "GrammalecteST3", "Grammalecte-fr-v0.6.4", "grammalecte-cli.py")
-	st = os.stat(grammalecte_path)
-	os.chmod(grammalecte_path, st.st_mode | stat.S_IEXEC)
 
 # Get a state for a particular view
 def get_state(view):
@@ -110,15 +100,12 @@ def runGrammalecte(view):
 	global grammalecte_path
 	
 	# get full buffer content and save it to a temp file (this is system independant)
-	contents = view.substr(sublime.Region(0, view.size()-1))
-	temp_file, filename = tempfile.mkstemp()
-	os.write(temp_file, bytes(contents, 'UTF-8'))
-	os.close(temp_file)
-
+	contents = view.substr(sublime.Region(0, view.size()))
+	
 	# send temp file to cli (must be in path, not system indepentant, currently only tested on Linux system)
 	# get and parse JSON result
-	result = subprocess.check_output([grammalecte_path, '-f', filename, '-j'])
-	gramma = json.loads(result.decode('utf-8'))
+	result = api.main(contents)
+	gramma = json.loads(result)
 
 	# get plugin state for this view
 	state = get_state(view)
