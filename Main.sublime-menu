@@ -1,0 +1,46 @@
+[
+    {
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "Grammalecte",
+                        "children":
+                        [
+
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/GrammalecteST3/Grammalecte.sublime-settings"},
+                                "caption": "Settings – Default"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/User/Grammalecte.sublime-settings"},
+                                "caption": "Settings – User"
+                            },
+                            {
+                                "caption": "-"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/GrammalecteST3/LICENSE"},
+                                "caption": "GrammalecteST3 License"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/GrammalecteST3/Grammalecte-fr-v0.6.4/LICENSE.txt"},
+                                "caption": "Grammalecte License"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
