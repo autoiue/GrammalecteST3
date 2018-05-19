@@ -20,4 +20,7 @@
 
 	/* Ignore those Grammalecte rules */
 	"ignored_ruleid" : ["esp_fin_ligne"],
+
+	/* Autocorrect those Grammalecte rules with the first suggestion */
+	"autocorrect_ruleid" : [],
 }

@@ -64,7 +64,8 @@ def point_to_error(point, view):
 class GrammaRunCommand(sublime_plugin.TextCommand):
 
 	def run(self, edit):
-		runGrammalecte(self.view)
+		# run Grammalecte analysis in a new thread to avoid to block the view
+		sublime.set_timeout_async(lambda : runGrammalecte(self.view), 0)
 
 	def description(self):
 		if get_state(self.view)['showing_gramma']:
@@ -93,6 +94,12 @@ def applyGrammalecte(settings, view, state, regions, errors, show_apos, show_spa
 
 		# print that we are ready in the status bar
 		view.window().status_message("Grammalecte : "+str(len(state['errors']))+" grammar error"+ ("s" if len(state['errors']) > 1 else "")+" found.")
+	
+		for rule in settings.get("autocorrect_ruleid", []):
+			#correct_all_ruleid(view, edit, rule)
+			view.run_command("gramma_fix_all_current", {"rule":rule})
+			pass
+
 	else:
 		print("cancel")
 
@@ -227,6 +234,20 @@ def replaceBySuggestion(view, edit, err):
 		view.add_regions("gramma", new_regions, "entity", "dot", sublime.DRAW_NO_FILL | sublime.DRAW_SQUIGGLY_UNDERLINE)
 	pass
 
+def correct_all_ruleid(view, edit, ruleid):
+	# go through errors by the end to avoid most of the errors ordinates shifting
+	errors_fixed = 0
+	for err in reversed(get_state(view)['errors']):
+
+		# solve only if errors correspond to a specific rule
+		if err["gdata"]["sRuleId"] == ruleid:
+			replaceBySuggestion(view, edit, err)
+			errors_fixed += 1
+
+	# Display how many errors we fixed
+	view.window().status_message("Grammalecte fixed "+str(errors_fixed)+" error"+ ("s" if errors_fixed > 1 else "")+".")
+	pass
+
 # command to shut down the plugin
 class GrammaClearCommand(sublime_plugin.TextCommand):
 
@@ -247,18 +268,8 @@ class GrammaAposCommand(sublime_plugin.TextCommand):
 
 	def run(self, edit):
 
-		# go through errors by the end to avoid most of the errors ordinates shifting
-		errors_fixed = 0
-		for err in reversed(get_state(self.view)['errors']):
+		correct_all_ruleid(self.view, edit, "apostrophe_typographique")	
 
-			# solve only if errors correspond to a specific rule
-			if err["gdata"]["sRuleId"] == "apostrophe_typographique":
-				replaceBySuggestion(self.view, edit, err)
-				errors_fixed += 1
-
-		# Display how many errors we fixed
-		self.view.window().status_message("Grammalecte fixed "+str(errors_fixed)+" error"+ ("s" if errors_fixed > 1 else "")+".")
-				
 		# set flag off
 		get_state(self.view)['show_apos'] = False
 
@@ -292,23 +303,18 @@ class GrammaSpacesCommand(sublime_plugin.TextCommand):
 
 # command to bulk-resolve errors of the kind of the one under the mouse
 class GrammaFixAllCurrentCommand(sublime_plugin.TextCommand):
-	def run(self, edit, event):
+	def run(self, edit, *args, event=None, rule=None):
 
 		# get the error under the mouse
-		error = event_to_error(event, self.view)
+		if rule is None:
+			error = event_to_error(event, self.view)
+			if error is not None:
+				rule = error['gdata']['sRuleId']
 
 		# if any :
-		if error is not None:
-
-			# got through all errors, and resolve if ruleId correspond
-			errors_fixed = 0
-			for err in reversed(get_state(self.view)['errors']):
-				if err["gdata"]["sRuleId"] == error['gdata']['sRuleId']:
-					replaceBySuggestion(self.view, edit, err)
-					errors_fixed += 1
-
-			# Display how many errors we fixed
-			self.view.window().status_message("Grammalecte fixed "+str(errors_fixed)+" error"+ ("s" if errors_fixed > 1 else "")+".")
+		if rule is not None:
+			correct_all_ruleid(self.view, edit, rule)	
+			
 
 	# only show if there is an error under the mouse
 	# and there is at least on suggestion 
@@ -369,7 +375,8 @@ def autorun(view):
 	# an autorun is due (no modification made in between the time out)
 	if time.time() > get_state(view)['next_auto_run']:
 		# run
-		runGrammalecte(view)
+		print("AUTORUN")
+		view.run_command("gramma_run")
 	else:
 		print("CANCEL")
 
