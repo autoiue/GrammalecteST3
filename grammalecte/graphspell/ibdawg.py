@@ -8,6 +8,7 @@ from functools import wraps
 import time
 import json
 import binascii
+import sublime
 
 #import logging
 #logging.basicConfig(filename="suggestions.log", level=logging.DEBUG)
@@ -85,7 +86,9 @@ class IBDAWG:
 
     def __init__ (self, source):
         if type(source) is str:
-            self.by = pkgutil.get_data(__package__, "_dictionaries/" + source)
+            #self.by = pkgutil.get_data(__package__, "_dictionaries/" + source)
+            path = sublime.find_resources(source)[0]
+            self.by = sublime.load_binary_resource(path)
             if not self.by:
                 raise OSError("# Error. File not found or not loadable: "+source)
 

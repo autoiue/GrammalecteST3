@@ -5,6 +5,8 @@ import GrammalecteST3.grammalecte as grammalecte
 import json
 import time
 
+from os.path import basename
+
 # stores the plugin states for the different views
 view_states = {}
 
