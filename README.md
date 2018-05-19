@@ -9,9 +9,7 @@ Ce plugin est expérimental et pourrait causer des __pertes de données__.
 
 ## Installation 
 
-GrammalecteST3 requiert que `grammalecte-cli.py` soit dans le chemin système. Le plus facile est d’installer Grammalecte CLI&Serveur à partir de https://www.dicollecte.org/?download_div et d’exécuter `setup.py install` avec les droits administrateurs.
-
-Ensuite, cloner ce dépot git dans le répertoire de packages de Sublime Text : __Préférences__ > __Browse packages…__ puis `git clone https://github.com/procsynth/GrammalecteST3` dans ce dossier.
+Cloner ce dépot git dans le répertoire de packages de Sublime Text : __Préférences__ > __Browse packages…__ puis `git clone https://github.com/procsynth/GrammalecteST3` dans ce dossier.
 
 Ce plugin n’est pas actuellement disponible via Package Control (à venir).
 
