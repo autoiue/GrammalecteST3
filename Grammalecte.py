@@ -1,7 +1,7 @@
 import sublime
 import sublime_plugin
-import GrammalecteST3.grammalecte_api as api
-import GrammalecteST3.grammalecte as grammalecte
+import Grammalecte.grammalecte_api as api
+import Grammalecte.grammalecte as grammalecte
 import json
 import time
 

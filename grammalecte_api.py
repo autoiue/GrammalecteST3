@@ -4,7 +4,7 @@ import sys
 import os.path
 import json
 
-import GrammalecteST3.grammalecte as grammalecte
+import Grammalecte.grammalecte as grammalecte
 
 def generateParagraphFromBuffer (buff, bConcatLines=False):
 	lines = buff.split("\n")
@@ -17,7 +17,7 @@ def generateParagraphFromBuffer (buff, bConcatLines=False):
 
 def main (buffer):
 
-	oGrammarChecker = grammalecte.GrammarChecker("GrammalecteST3.grammalecte.fr")
+	oGrammarChecker = grammalecte.GrammarChecker("Grammalecte.grammalecte.fr")
 	oSpellChecker = oGrammarChecker.getSpellChecker()
 	oLexicographer = oGrammarChecker.getLexicographer()
 	oTextFormatter = oGrammarChecker.getTextFormatter()
