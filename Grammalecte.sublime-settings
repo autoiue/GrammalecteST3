@@ -2,21 +2,6 @@
 
 	/* Time after which Grammalecte should be rerun */
 	"autorun_interval_seconds" : 1,
-	
-	/* Syntaxes where Grammalecte should be enabled */
-	"syntaxes": [
-		"Markdown",
-		"Creole", 
-		"Textile", 
-		"reStructuredText",
-		"Asciidoc",
-		"Asciidoctor",
-		"MediaWiki",
-		"MediaWikiNG",
-		"MediaWikiNG_ST2",
-		"MediaWiki_ST2",
-		"Plain text"
-	],
 
 	/* Ignore those Grammalecte rules */
 	"ignored_ruleid" : ["esp_fin_ligne"],
