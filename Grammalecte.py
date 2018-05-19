@@ -101,7 +101,8 @@ def applyGrammalecte(settings, view, state, regions, errors, show_apos, show_spa
 			pass
 
 	else:
-		print("cancel")
+		#print("cancel")
+		pass
 
 
 # save the current buffer to grammalecte-cli.py (must be in path), reflect results in view
@@ -375,10 +376,11 @@ def autorun(view):
 	# an autorun is due (no modification made in between the time out)
 	if time.time() > get_state(view)['next_auto_run']:
 		# run
-		print("AUTORUN")
+		#print("AUTORUN")
 		view.run_command("gramma_run")
 	else:
-		print("CANCEL")
+		#print("CANCEL")
+		pass
 
 # We receive the events from Sublime here
 class GrammaEventsCommand(sublime_plugin.ViewEventListener):
