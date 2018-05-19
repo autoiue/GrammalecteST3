@@ -37,16 +37,14 @@ def point_to_error(point, view):
 
 	# get an actualised set of regions
 	regions = view.get_regions("gramma")
-	reg_index = 0
 
 	# look through set to find the first region containg the text point
-	for reg in regions:
-		if reg.begin() <= point:
-			if reg.end() >= point:
+	for reg_index, reg in enumerate(regions):
+		if reg.contains(point):
 				# get the corresponding error
 				# TODO : not rely on lists orders to find error 
 				return get_state(view)['errors'][reg_index]
-		reg_index += 1
+
 	# if none found, return None
 	return None
 
@@ -86,6 +84,7 @@ def applyGrammalecte(settings, view, state, regions, errors, show_apos, show_spa
 
 		# print that we are ready in the status bar
 		view.window().status_message("Grammalecte : "+str(len(state['errors']))+" grammar error"+ ("s" if len(state['errors']) > 1 else "")+" found.")
+		view.settings().set("gramma", True)
 	
 		for rule in settings.get("autocorrect_ruleid", []):
 			#correct_all_ruleid(view, edit, rule)
@@ -245,6 +244,7 @@ class GrammaClearCommand(sublime_plugin.TextCommand):
 
 		# erase regions from view
 		self.view.erase_regions("gramma")
+		self.view.settings().set("gramma", False)
 
 		# flag that we not running anymore for this view
 		get_state(self.view)['showing_gramma'] = False
@@ -376,14 +376,7 @@ class GrammaEventsCommand(sublime_plugin.ViewEventListener):
 
 	@classmethod
 	def is_applicable(cls, settings):
-		s = sublime.load_settings('Grammalecte.sublime-settings')
-
-		#print(settings.get('syntax'))
-
-		syntaxes_enabled = [x.lower() for x in s.get('syntaxes', []) or []]	
-		view_syntax = basename(settings.get('syntax')).split('.')[0].lower()
-
-		return view_syntax in syntaxes_enabled
+		return settings.get("gramma", False)
 
 	# when the mouse is static for a period of time
 	# we show the error message if there is an error
