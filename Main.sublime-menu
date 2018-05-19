@@ -34,7 +34,7 @@
                             },
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/GrammalecteST3/Grammalecte-fr-v0.6.4/LICENSE.txt"},
+                                "args": {"file": "${packages}/GrammalecteST3/LICENSE.txt"},
                                 "caption": "Grammalecte License"
                             }
                         ]
