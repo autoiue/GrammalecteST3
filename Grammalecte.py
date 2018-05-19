@@ -4,14 +4,19 @@ import subprocess
 import tempfile
 import json
 import os
+import stat
+from os.path import basename
+from os.path import join
 import time
 
 # stores the plugin states for the different views
 view_states = {}
 
-# TODO: manage this through a sublime-config file
-ignore_ruleid = ['esp_fin_ligne']
-autorun_interval_seconds = 3
+def plugin_loaded():
+	global grammalecte_path
+	grammalecte_path = join(sublime.packages_path(), "GrammalecteST3", "Grammalecte-fr-v0.6.4", "grammalecte-cli.py")
+	st = os.stat(grammalecte_path)
+	os.chmod(grammalecte_path, st.st_mode | stat.S_IEXEC)
 
 # Get a state for a particular view
 def get_state(view):
@@ -25,7 +30,8 @@ def get_state(view):
 			'show_apos' : False,
 			'show_spaces' : False,
 			'regions' : [],
-			'next_auto_run' : 0
+			'next_auto_run' : 0,
+			'cancel_autorun' : False
 		}
 	return view_states[view.id()]
 
@@ -41,7 +47,7 @@ def point_to_error(point, view):
 	regions = view.get_regions("gramma")
 	reg_index = 0
 
-	# look through set to find the first region cointaing the text point
+	# look through set to find the first region containg the text point
 	for reg in regions:
 		if reg.begin() <= point:
 			if reg.end() >= point:
@@ -67,10 +73,33 @@ class GrammaRunCommand(sublime_plugin.TextCommand):
 			return "Run Grammalecte"
 		pass
 
-# save the current buffer to grammalecte-cli.py (must be in path), reflect results in view
+def applyGrammalecte(settings, view, state, regions, errors, show_apos, show_spaces):
+	if time.time() > state['next_auto_run']:
 
+		state['regions'] = regions
+		state['errors'] = errors
+		state['show_apos'] = show_apos
+		state['show_spaces'] = show_spaces
+		view.add_regions("gramma", state['regions'], "entity", "dot", sublime.DRAW_NO_FILL | sublime.DRAW_SQUIGGLY_UNDERLINE)
+
+		# flag to show that we up and running
+		state['showing_gramma'] = True
+
+		# get autorun interval from config file
+		autorun_interval_seconds = settings.get("autorun_interval_seconds")
+
+		# set next autorun time
+		state['next_auto_run'] = time.time() + autorun_interval_seconds
+
+		# print that we are ready in the status bar
+		view.window().status_message("Grammalecte : "+str(len(state['errors']))+" grammar error"+ ("s" if len(state['errors']) > 1 else "")+" found.")
+	else:
+		print("cancel")
+
+
+# save the current buffer to grammalecte-cli.py (must be in path), reflect results in view
 def runGrammalecte(view):
-	global ignore_ruleid, autorun_interval_seconds
+	global grammalecte_path
 	
 	# get full buffer content and save it to a temp file (this is system independant)
 	contents = view.substr(sublime.Region(0, view.size()-1))
@@ -80,7 +109,7 @@ def runGrammalecte(view):
 
 	# send temp file to cli (must be in path, not system indepentant, currently only tested on Linux system)
 	# get and parse JSON result
-	result = subprocess.check_output(['grammalecte-cli.py', '-f', filename, '-j'])
+	result = subprocess.check_output([grammalecte_path, '-f', filename, '-j'])
 	gramma = json.loads(result.decode('utf-8'))
 
 	# get plugin state for this view
@@ -91,9 +120,14 @@ def runGrammalecte(view):
 		data = gramma['data']
 
 		# reset state
-		state['regions'] = []
-		state['errors'] = []
-		state['show_apos'] = False
+		errors = []
+		regions = []
+		show_spaces = False
+		show_apos = False
+
+		# get ingored rules from settings
+		s = sublime.load_settings('Grammalecte.sublime-settings')
+		ignore_ruleid = [x.lower() for x in s.get('ignored_ruleid', []) or []]	
 
 		# go through result, paragraph by pragraph
 		region_index = 0
@@ -115,16 +149,16 @@ def runGrammalecte(view):
 
 						# flag the presence of common type errors
 						if grammar_error['sRuleId'] == "apostrophe_typographique":
-							state['show_apos'] = True
+							show_apos = True
 						if grammar_error['sType'] == "nbsp":
-							state['show_spaces'] = True
+							show_spaces = True
 
 						# create region for error that will be displayed in the view
 						error_region = sublime.Region(line_begin+grammar_error['nStart'],line_begin+grammar_error['nEnd'])
-						state['regions'].append(error_region)
+						regions.append(error_region)
 
 						# store error along with view dependant data
-						state['errors'].append({
+						errors.append({
 									  "start":line_begin+grammar_error['nStart'],
 									  "end":line_begin+grammar_error['nEnd'],
 									  "region" : region_index,
@@ -139,18 +173,11 @@ def runGrammalecte(view):
 			pass
 
 		
-		# draw error/regions on view
-		view.add_regions("gramma", state['regions'], "entity", "dot", sublime.DRAW_NO_FILL | sublime.DRAW_SQUIGGLY_UNDERLINE)
-
-		# flag to show that we up and running
-		state['showing_gramma'] = True
-
-		# set next autorun time
-		state['next_auto_run'] = time.time() + autorun_interval_seconds
-
-		# print that we are ready in the status bar
-		view.window().status_message("Grammalecte : "+str(len(state['errors']))+" grammar error"+ ("s" if len(state['errors']) > 1 else "")+" found.")
-
+		# draw error/regions on view and update state
+		# (run this in another thread to be sure to have the last data and cancel correction if buffer modified
+		# during the execution of the cli tool)
+		sublime.set_timeout_async(lambda : applyGrammalecte(s, view, state, regions, errors, show_apos, show_spaces),0)
+		
 	pass
 
 # do a replacement of erroned text by suggested text
@@ -333,44 +360,66 @@ class GrammaSuggestCommand(sublime_plugin.TextCommand):
 	def want_event(self):
 		return True
 
+# 
+def autorun(view):
+	# get autorun interval from config file
+	s = sublime.load_settings('Grammalecte.sublime-settings')
+	autorun_interval_seconds = s.get("autorun_interval_seconds")
+
+	# an autorun is due (no modification made in between the time out)
+	if time.time() > get_state(view)['next_auto_run']:
+		# run
+		runGrammalecte(view)
+	else:
+		print("CANCEL")
+
 # We receive the events from Sublime here
-class GrammaEventsCommand(sublime_plugin.EventListener):
+class GrammaEventsCommand(sublime_plugin.ViewEventListener):
+
+	@classmethod
+	def is_applicable(cls, settings):
+		s = sublime.load_settings('Grammalecte.sublime-settings')
+
+		#print(settings.get('syntax'))
+
+		syntaxes_enabled = [x.lower() for x in s.get('syntaxes', []) or []]	
+		view_syntax = basename(settings.get('syntax')).split('.')[0].lower()
+
+		return view_syntax in syntaxes_enabled
 
 	# when the mouse is static for a period of time
 	# we show the error message if there is an error
 	# under the mouse
-	def on_hover(self, view, point, hover_zone):
+	def on_hover(self, point, hover_zone):
 
 		# get the plugin state for this view
-		state = get_state(view)
+		state = get_state(self.view)
 
 		# hide the previous popup
-		view.hide_popup()
+		self.view.hide_popup()
 
 		# if we're running in this view
 		# get and display error message
 		if state['showing_gramma']:
-			error = point_to_error(point, view)
+			error = point_to_error(point, self.view)
 			if error is not None:
-				view.show_popup(error['gdata']['sMessage'], location=point, flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY)
+				self.view.show_popup(error['gdata']['sMessage'], location=point, flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY)
 
 		pass
 
-	## when buffer is modified
-	#def on_modified_async(self,view):
-	#	global autorun_interval_seconds
-	#
-	#	print(get_state(view)['next_auto_run']-time.time())
-	#
-	#	# if we're running
-	#	if get_state(view)['showing_gramma']:
-	#
-	#		# and an autorun is due
-	#		if time.time() > get_state(view)['next_auto_run']:
-	#
-	#			# set next autorun time
-	#			get_state(view)['next_auto_run'] = time.time() + autorun_interval_seconds
-	#
-	#			# run
-	#			runGrammalecte(view)
+	# when buffer is modified
+	def on_modified_async(self):
 
+		# if we're running
+		if get_state(self.view)['showing_gramma']:
+
+			# get autorun interval from config file
+			s = sublime.load_settings('Grammalecte.sublime-settings')
+			autorun_interval_seconds = s.get("autorun_interval_seconds")
+
+			# update next due autorun to now + interval
+			get_state(self.view)['next_auto_run'] = time.time() + autorun_interval_seconds
+			
+			# queue autorun
+			sublime.set_timeout_async(lambda : autorun(self.view), autorun_interval_seconds*1000+100)
+		pass
